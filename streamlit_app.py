@@ -285,21 +285,22 @@ def main():
         with col1:
             run_button = st.button("Run Query", type="primary", width="stretch")
 
-        if run_button:
-            with st.spinner("Executing query ..."):
-                df = run_query(edited_sql)
-                
-                if df is not None:
-                    st.session_state.query_history.append(
-                        {'question': user_question, 
-                        'sql': edited_sql, 
-                        'rows': len(df)}
-                    )
+        with col2:
+            if run_button:
+                with st.spinner("Executing query ..."):
+                    df = run_query(edited_sql)
+                    
+                    if df is not None:
+                        st.session_state.query_history.append(
+                            {'question': user_question, 
+                            'sql': edited_sql, 
+                            'rows': len(df)}
+                        )
 
-                    st.markdown("---")
-                    st.subheader("📊 Query Results")
-                    st.success(f"✅ Query returned {len(df)} rows")
-                    st.dataframe(df, width="stretch")
+                        st.markdown("---")
+                        st.subheader("📊 Query Results")
+                        st.success(f"✅ Query returned {len(df)} rows")
+                        st.dataframe(df, width="stretch")
 
 
     if st.session_state.query_history:
