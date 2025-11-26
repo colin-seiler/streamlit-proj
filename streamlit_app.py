@@ -315,33 +315,41 @@ def main():
             else:
                 for idx, item in enumerate(reversed(st.session_state.query_history[-10:])):
                     with st.expander(f"Query {idx+1}: {item['question'][:45]}..."):
-                        st.code(item["sql"], language="sql")
+                        st.markdown(f"**Question:** {item['question']}")
+                        st.text_area(
+                            f"hidden_sql_{idx}",
+                            item["sql"],
+                            key=f"hidden_sql_{idx}",
+                            height=0,
+                            label_visibility="collapsed"
+                        )
 
                         html_id = f"sql_copy_{idx}"
                         components.html(
                             f"""
-                            <textarea id="{html_id}" style="display:none;">{item['sql']}</textarea>
+                            <textarea id="sql_copy_{idx}" style="display:none;">{item['sql']}</textarea>
                             <button
-                                onclick="navigator.clipboard.writeText(document.getElementById('{html_id}').value)"
+                                onclick="navigator.clipboard.writeText(document.getElementById('sql_copy_{idx}').value)"
                                 style="
                                     background-color:#1c88f3;
                                     color:white;
-                                    padding:6px 12px;
+                                    padding:6px 10px;
+                                    margin-top:6px;
                                     border:none;
                                     border-radius:6px;
                                     cursor:pointer;
-                                    margin-top:6px;
                                 "
                             >📋 Copy SQL</button>
                             """,
                             height=40
                         )
                         
-                        st.caption(f"{item['rows']} rows returned")
-                        if st.button("Re-run", key=f"rerun_{idx}", use_container_width=True):
+                        if st.button("Re-run query", key=f"rerun_{idx}", use_container_width=True):
                             df = run_query(item["sql"])
                             if df is not None:
                                 st.dataframe(df, use_container_width=True)
+
+                        st.caption(f"Returned {item['rows']} rows")
 
 
 if __name__ == "__main__":
