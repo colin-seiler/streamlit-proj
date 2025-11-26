@@ -18,7 +18,7 @@ DATABASE_SCHEMA = """
 Database Schema:
 
 LOOKUP TABLES:
-- Regions (
+- Region (
     RegionID SERIAL PRIMARY KEY,
     Region TEXT
   )
