@@ -315,51 +315,58 @@ def main():
             else:
                 for idx, item in enumerate(reversed(st.session_state.query_history[-10:])):
 
-                    with st.expander(f"Query {idx+1}: {item['question'][:45]}..."):
+                    with st.expander(f"Query {len(st.session_state.query_history)-idx}: {item['question'][:45]}..."):
                         
                         st.markdown(f"**Question:** {item['question']}")
 
-                        # Invisible textarea needed for JS access
-                        st.text_area(
-                            f"hidden_sql_{idx}",
-                            item["sql"],
-                            key=f"hidden_sql_{idx}",
-                            height=1,
-                            label_visibility="collapsed"
-                        )
-
-                        # Make the textarea truly invisible
-                        st.markdown(
-                            f"""
-                            <style>
-                                #hidden_sql_{idx} {{
-                                    display: none !important;
-                                }}
-                            </style>
-                            """,
-                            unsafe_allow_html=True,
-                        )
-
-                        # Copy button
+                        # --- HIDDEN SQL STORED IN JS VARIABLE ---
                         components.html(
                             f"""
-                            <textarea id="sql_copy_{idx}" style="display:none;">{item['sql']}</textarea>
-                            <button
-                                onclick="navigator.clipboard.writeText(document.getElementById('sql_copy_{idx}').value)"
+                            <script>
+                                const sql_{idx} = `{item['sql'].replace("`","\\`")}`;
+                                function copySQL_{idx}() {{
+                                    navigator.clipboard.writeText(sql_{idx});
+                                    const toast = document.getElementById("toast_{idx}");
+                                    toast.style.display = "block";
+                                    setTimeout(() => toast.style.display = "none", 1200);
+                                }}
+                            </script>
+
+                            <div style="margin-top:10px;">
+                                <button onclick="copySQL_{idx}()"
+                                    style="
+                                        background-color:#3b82f6;
+                                        color:white;
+                                        padding:6px 14px;
+                                        border:none;
+                                        border-radius:6px;
+                                        cursor:pointer;
+                                        font-size:14px;
+                                    ">
+                                    📋 Copy SQL
+                                </button>
+                            </div>
+
+                            <!-- Toast Popup -->
+                            <div id="toast_{idx}" 
                                 style="
-                                    background-color:#1c88f3;
+                                    display:none;
+                                    position:relative;
+                                    margin-top:8px;
+                                    padding:6px 12px;
+                                    background-color:#10b981;
                                     color:white;
-                                    padding:6px 10px;
-                                    margin-top:6px;
-                                    border:none;
-                                    border-radius:6px;
-                                    cursor:pointer;
-                                "
-                            >📋 Copy SQL</button>
+                                    border-radius:4px;
+                                    font-size:13px;
+                                    width:max-content;
+                                ">
+                                ✓ Copied!
+                            </div>
                             """,
-                            height=40
+                            height=100,
                         )
 
+                        # --- Re-run button ---
                         if st.button("Re-run", key=f"rerun_{idx}", use_container_width=True):
                             df = run_query(item["sql"])
                             if df is not None:
