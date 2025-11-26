@@ -5,6 +5,8 @@ import psycopg2
 from dotenv import load_dotenv
 from openai import OpenAI
 import bcrypt
+import streamlit.components.v1 as components
+
 
 
 load_dotenv()  # reads variables from a .env file and sets them in os.environ
@@ -313,18 +315,28 @@ def main():
             else:
                 for idx, item in enumerate(reversed(st.session_state.query_history[-10:])):
                     with st.expander(f"Query {idx+1}: {item['question'][:45]}..."):
-                        st.text_area(f"hidden_sql_{idx}", item["sql"], key=f"hidden_sql_{idx}", label_visibility="collapsed")
+                        st.code(item["sql"], language="sql")
 
-                        copy_js = f"""
-                                    <script>
-                                    function copyToClipboard_{idx}() {{
-                                        var text = document.getElementById("hidden_sql_{idx}").value;
-                                        navigator.clipboard.writeText(text);
-                                    }}
-                                    </script>
-                                    """
-                        st.markdown(copy_js, unsafe_allow_html=True)
-                        st.markdown(f'<button onclick="copyToClipboard_{idx}()" class="stButton">📋 Copy SQL</button>', unsafe_allow_html=True)
+                        html_id = f"sql_copy_{idx}"
+                        components.html(
+                            f"""
+                            <textarea id="{html_id}" style="display:none;">{item['sql']}</textarea>
+                            <button
+                                onclick="navigator.clipboard.writeText(document.getElementById('{html_id}').value)"
+                                style="
+                                    background-color:#1c88f3;
+                                    color:white;
+                                    padding:6px 12px;
+                                    border:none;
+                                    border-radius:6px;
+                                    cursor:pointer;
+                                    margin-top:6px;
+                                "
+                            >📋 Copy SQL</button>
+                            """,
+                            height=40
+                        )
+                        
                         st.caption(f"{item['rows']} rows returned")
                         if st.button("Re-run", key=f"rerun_{idx}", use_container_width=True):
                             df = run_query(item["sql"])
