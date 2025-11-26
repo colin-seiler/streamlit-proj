@@ -236,21 +236,21 @@ def main():
 
 
     # main input
-    cola, colb = st.columns(2)
+    left_col, right_col = st.columns([1.4, 1])
 
-    with cola:
+    with left_col:
         user_question = st.text_area(
             " What would you like to know?",
             height=100, 
             placeholder="Where is customer located?   "
         )
 
-        col1, col2, col3 = st.columns([2, 2, 8])
+        b1, b2 = st.columns([1, 1])
         
-        with col1:
+        with b1:
             generate_button = st.button(" Generate SQL", type="primary", width="stretch")
 
-        with col2:
+        with b2:
             if st.button(" Clear History", width="stretch"):
                 st.session_state.query_history = []
                 st.session_state.generated_sql = None
@@ -270,7 +270,7 @@ def main():
                 if sql_query:        
                     st.session_state.generated_sql = sql_query
                     st.session_state.current_question = user_question
-    with colb:
+
         if st.session_state.generated_sql:
             st.subheader("Generated SQL Query")
             st.info(f"**Question:** {st.session_state.current_question}")
@@ -302,9 +302,7 @@ def main():
                         st.success(f"✅ Query returned {len(df)} rows")
                         st.dataframe(df, width="stretch")
 
-
-    if st.session_state.query_history:
-        st.markdown('---')
+    with right_col:
         st.subheader("📜 Query History")
         for idx, item in enumerate(reversed(st.session_state.query_history[-5:])):
             with st.expander(f"Query {len(st.session_state.query_history)-idx}: {item['question'][:60]}..."):
