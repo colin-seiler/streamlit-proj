@@ -234,8 +234,6 @@ def main():
     if 'current_question' not in st.session_state:
         st.session_state.current_question = None
 
-
-    # --- TWO COLUMNS ---
     left, right = st.columns([1.5, 1])
 
     with left:
@@ -315,7 +313,18 @@ def main():
             else:
                 for idx, item in enumerate(reversed(st.session_state.query_history[-10:])):
                     with st.expander(f"Query {idx+1}: {item['question'][:45]}..."):
-                        st.code(item["sql"], language="sql")
+                        st.text_area(f"hidden_sql_{idx}", item["sql"], key=f"hidden_sql_{idx}", label_visibility="collapsed")
+
+                        copy_js = f"""
+                                    <script>
+                                    function copyToClipboard_{idx}() {{
+                                        var text = document.getElementById("hidden_sql_{idx}").value;
+                                        navigator.clipboard.writeText(text);
+                                    }}
+                                    </script>
+                                    """
+                        st.markdown(copy_js, unsafe_allow_html=True)
+                        st.markdown(f'<button onclick="copyToClipboard_{idx}()" class="stButton">📋 Copy SQL</button>', unsafe_allow_html=True)
                         st.caption(f"{item['rows']} rows returned")
                         if st.button("Re-run", key=f"rerun_{idx}", use_container_width=True):
                             df = run_query(item["sql"])
