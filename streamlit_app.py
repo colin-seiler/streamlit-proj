@@ -236,56 +236,57 @@ def main():
 
 
     # main input
+    cola, colb = st.columns(2)
 
-    user_question = st.text_area(
-        " What would you like to know?",
-        height=100, 
-        placeholder="Where is customer located?   "
-    )
-
-    col1, col2, col3 = st.columns([1, 1, 4])
-    
-    with col1:
-        generate_button = st.button(" Generate SQL", type="primary", width="stretch")
-
-    with col2:
-        if st.button(" Clear History", width="stretch"):
-            st.session_state.query_history = []
-            st.session_state.generated_sql = None
-            st.session_state.current_question = None
-
-    if generate_button and user_question:
-        user_question = user_question.strip()
-
-        if st.session_state.current_question != user_question:
-            st.session_state.generated_sql = None
-            st.session_state.current_question = None
-            
-
-
-        with st.spinner("🧠 AI is thinking and generating SQL..."):
-            sql_query = generate_sql_with_gpt(user_question)
-            if sql_query:        
-                st.session_state.generated_sql = sql_query
-                st.session_state.current_question = user_question
-
-    if st.session_state.generated_sql:
-        st.markdown("---")
-        st.subheader("Generated SQL Query")
-        st.info(f"**Question:** {st.session_state.current_question}")
-
-        edited_sql = st.text_area(
-            "Review and edit the SQL query if needed:", 
-            value=st.session_state.generated_sql,
-            height=200,
+    with cola:
+        user_question = st.text_area(
+            " What would you like to know?",
+            height=100, 
+            placeholder="Where is customer located?   "
         )
 
-        col1, col2 = st.columns([1, 5])
-
+        col1, col2, col3 = st.columns([1, 1, 4])
+        
         with col1:
-            run_button = st.button("Run Query", type="primary", width="stretch")
+            generate_button = st.button(" Generate SQL", type="primary", width="stretch")
 
         with col2:
+            if st.button(" Clear History", width="stretch"):
+                st.session_state.query_history = []
+                st.session_state.generated_sql = None
+                st.session_state.current_question = None
+
+        if generate_button and user_question:
+            user_question = user_question.strip()
+
+            if st.session_state.current_question != user_question:
+                st.session_state.generated_sql = None
+                st.session_state.current_question = None
+                
+
+
+            with st.spinner("🧠 AI is thinking and generating SQL..."):
+                sql_query = generate_sql_with_gpt(user_question)
+                if sql_query:        
+                    st.session_state.generated_sql = sql_query
+                    st.session_state.current_question = user_question
+    with colb:
+        if st.session_state.generated_sql:
+            st.markdown("---")
+            st.subheader("Generated SQL Query")
+            st.info(f"**Question:** {st.session_state.current_question}")
+
+            edited_sql = st.text_area(
+                "Review and edit the SQL query if needed:", 
+                value=st.session_state.generated_sql,
+                height=200,
+            )
+
+            col1, col2 = st.columns([1, 5])
+
+            with col1:
+                run_button = st.button("Run Query", type="primary", width="stretch")
+            
             if run_button:
                 with st.spinner("Executing query ..."):
                     df = run_query(edited_sql)
