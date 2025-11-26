@@ -368,9 +368,11 @@ def main():
 
                         # --- Re-run button ---
                         if st.button("Re-run", key=f"rerun_{idx}", use_container_width=True):
-                            df = run_query(item["sql"])
-                            if df is not None:
-                                st.dataframe(df, use_container_width=True)
+                            st.session_state.current_question = item["question"]
+                            st.session_state.generated_sql = item["sql"]
+
+                            st.session_state.run_query_now = True
+                            st.rerun()
 
                         st.caption(f"Returned {item['rows']} rows")
 
