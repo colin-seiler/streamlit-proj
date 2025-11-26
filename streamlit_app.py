@@ -245,7 +245,7 @@ def main():
             placeholder="Where is customer located?   "
         )
 
-        col1, col2, col3 = st.columns([1, 1, 4])
+        col1, col2, col3 = st.columns([2, 2, 8])
         
         with col1:
             generate_button = st.button(" Generate SQL", type="primary", width="stretch")
@@ -272,7 +272,6 @@ def main():
                     st.session_state.current_question = user_question
     with colb:
         if st.session_state.generated_sql:
-            st.markdown("---")
             st.subheader("Generated SQL Query")
             st.info(f"**Question:** {st.session_state.current_question}")
 
