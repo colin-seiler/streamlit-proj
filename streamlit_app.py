@@ -288,6 +288,10 @@ def main():
 
                 run_button = st.button("▶ Run Query", use_container_width=True)
 
+                if st.session_state.get("run_query_now", False):
+                    run_button = True
+                    st.session_state.run_query_now = False
+
                 if run_button:
                     with st.spinner("Running query..."):
                         df = run_query(edited_sql)
@@ -316,65 +320,72 @@ def main():
                 for idx, item in enumerate(reversed(st.session_state.query_history[-10:])):
 
                     with st.expander(f"Query {len(st.session_state.query_history)-idx}: {item['question'][:45]}..."):
-                        
-                        st.markdown(f"**Question:** {item['question']}")
 
-                        # --- HIDDEN SQL STORED IN JS VARIABLE ---
+                        # --- Question text ---
+                        st.markdown(
+                            f"""
+                            <div style="margin-bottom: 6px;">
+                                <strong>Question:</strong> {item['question']}
+                            </div>
+                            """,
+                            unsafe_allow_html=True
+                        )
+
+                        # --- Copy button + toast popup ---
                         components.html(
                             f"""
-                            <script>
-                                const sql_{idx} = `{item['sql'].replace("`","\\`")}`;
-                                function copySQL_{idx}() {{
-                                    navigator.clipboard.writeText(sql_{idx});
-                                    const toast = document.getElementById("toast_{idx}");
-                                    toast.style.display = "block";
-                                    setTimeout(() => toast.style.display = "none", 1200);
-                                }}
-                            </script>
+                            <div style="display:flex; flex-direction:column; gap:6px;">
 
-                            <div style="margin-top:10px;">
-                                <button onclick="copySQL_{idx}()"
+                                <button
+                                    onclick="navigator.clipboard.writeText(`{item['sql'].replace('`','\\`')}`); 
+                                            const t=document.getElementById('toast_{idx}');
+                                            t.style.opacity='1';
+                                            setTimeout(()=>t.style.opacity='0', 900);"
                                     style="
                                         background-color:#3b82f6;
                                         color:white;
-                                        padding:6px 14px;
+                                        padding:6px 12px;
                                         border:none;
                                         border-radius:6px;
                                         cursor:pointer;
                                         font-size:14px;
-                                    ">
+                                        width:120px;
+                                    "
+                                >
                                     📋 Copy SQL
                                 </button>
-                            </div>
 
-                            <!-- Toast Popup -->
-                            <div id="toast_{idx}" 
-                                style="
-                                    display:none;
-                                    position:relative;
-                                    margin-top:8px;
-                                    padding:6px 12px;
-                                    background-color:#10b981;
-                                    color:white;
-                                    border-radius:4px;
-                                    font-size:13px;
-                                    width:max-content;
-                                ">
-                                ✓ Copied!
+                                <div id="toast_{idx}" 
+                                    style="
+                                        opacity:0;
+                                        transition:opacity .4s ease;
+                                        background-color:#10b981;
+                                        color:white;
+                                        padding:4px 10px;
+                                        border-radius:4px;
+                                        font-size:13px;
+                                        position:absolute;
+                                        margin-top:-4px;
+                                    ">
+                                    ✓ Copied!
+                                </div>
+
                             </div>
                             """,
-                            height=100,
+                            height=60,
                         )
 
-                        # --- Re-run button ---
+                        # --- Re-run button (tighter spacing) ---
                         if st.button("Re-run", key=f"rerun_{idx}", use_container_width=True):
                             st.session_state.current_question = item["question"]
                             st.session_state.generated_sql = item["sql"]
-
                             st.session_state.run_query_now = True
                             st.rerun()
 
-                        st.caption(f"Returned {item['rows']} rows")
+                        st.markdown(
+                            f"<div style='margin-top:4px; color:gray; font-size:12px;'>Returned {item['rows']} rows</div>",
+                            unsafe_allow_html=True
+                        )
 
 
 if __name__ == "__main__":
