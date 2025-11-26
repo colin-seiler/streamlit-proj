@@ -178,3 +178,4 @@ pyrightconfig.json
 .env
 .streamlit
 data.csv
+example_query.py
