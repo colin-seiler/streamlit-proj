@@ -18,52 +18,52 @@ DATABASE_SCHEMA = """
 Database Schema:
 
 LOOKUP TABLES:
-- regions (
-    region_id SERIAL PRIMARY KEY,
-    region_name TEXT
+- Regions (
+    RegionID SERIAL PRIMARY KEY,
+    Region TEXT
   )
 
-- countries (
-    country_id SERIAL PRIMARY KEY,
-    country_name TEXT,
-    region_id INTEGER (FK to regions)
+- Country (
+    CountryID SERIAL PRIMARY KEY,
+    Country TEXT,
+    RegionID INTEGER (FK to regions)
   )
 
-- product_categories (
-    product_category_id SERIAL PRIMARY KEY,
-    product_category_name TEXT,
-    product_category_description TEXT
+- ProductCategory (
+    ProductCategoryID SERIAL PRIMARY KEY,
+    ProductCategory TEXT,
+    ProductCategoryDescription TEXT
   )
 
 CORE TABLES:
-- customers (
-    customer_id SERIAL PRIMARY KEY,
-    first_name TEXT,
-    last_name TEXT,
-    address TEXT,
-    city TEXT,
-    country_id INTEGER (FK to countries)
+- Customer (
+    CustomerID SERIAL PRIMARY KEY,
+    FirstName TEXT,
+    LastName TEXT,
+    Address TEXT,
+    City TEXT,
+    CountryID INTEGER (FK to countries)
   )
 
-- products (
-    product_id SERIAL PRIMARY KEY,
-    product_name TEXT,
-    product_unit_price REAL,
-    product_category_id INTEGER (FK to product_categories)
+- Product (
+    ProductID SERIAL PRIMARY KEY,
+    ProductName TEXT,
+    ProductUnitPrice REAL,
+    ProductCategoryID INTEGER (FK to product_categories)
   )
 
-- order_details (
-    order_id SERIAL PRIMARY KEY,
-    customer_id INTEGER (FK to customers),
-    product_id INTEGER (FK to products),
-    order_date TIMESTAMP,
-    quantity_ordered INTEGER
+- OrderDetail (
+    OrderID SERIAL PRIMARY KEY,
+    CustomerID INTEGER (FK to customers),
+    ProductID INTEGER (FK to products),
+    OrderDate TIMESTAMP,
+    QuantityOrdered INTEGER
   )
 
 IMPORTANT NOTES:
 - Use JOINs to get descriptive values from lookup tables
-- order_date is a TIMESTAMP type
-- To calculate total order value: quantity_ordered * product_unit_price
+- OrderDate is a TIMESTAMP type
+- To calculate total order value: QuantityOrdered * ProductUnitPrice
 - Always use proper JOINs for foreign key relationships
 """
 
@@ -208,10 +208,8 @@ def main():
     Try asking questions like:
                         
     **Demographics:**
-    - How many patients do we have by gender?
-                        
-    **Admissions:**
-    - What is the average length of stay?                      
+    - Where are the customers from?
+                                           
     """)
     st.sidebar.markdown("---")
     st.sidebar.info("""
@@ -242,7 +240,7 @@ def main():
     user_question = st.text_area(
         " What would you like to know?",
         height=100, 
-        placeholder="What is the average length of stay?    "
+        placeholder="Where is customer located?   "
     )
 
     col1, col2, col3 = st.columns([1, 1, 4])
