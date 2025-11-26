@@ -235,84 +235,92 @@ def main():
         st.session_state.current_question = None
 
 
-    # main input
-    left_col, right_col = st.columns([1.4, 1])
+    # --- TWO COLUMNS ---
+    left, right = st.columns([1.5, 1])
 
-    with left_col:
-        user_question = st.text_area(
-            " What would you like to know?",
-            height=100, 
-            placeholder="Where is customer located?   "
-        )
+    with left:
 
-        b1, b2 = st.columns([1, 1])
-        
-        with b1:
-            generate_button = st.button(" Generate SQL", type="primary", width="stretch")
+        with st.container():
+            st.markdown("### 💬 Ask a Question")
+            st.markdown("<hr style='margin-top:-10px;'>", unsafe_allow_html=True)
 
-        with b2:
-            if st.button(" Clear History", width="stretch"):
+            user_question = st.text_area(
+                "",
+                height=90,
+                placeholder="e.g., What is the most sold product in Europe?"
+            )
+
+            btn1, btn2 = st.columns([1, 1])
+            with btn1:
+                generate_button = st.button("Generate SQL", use_container_width=True)
+            with btn2:
+                clear_history = st.button("Clear History", use_container_width=True)
+
+            if clear_history:
                 st.session_state.query_history = []
                 st.session_state.generated_sql = None
                 st.session_state.current_question = None
 
         if generate_button and user_question:
             user_question = user_question.strip()
-
             if st.session_state.current_question != user_question:
                 st.session_state.generated_sql = None
                 st.session_state.current_question = None
-                
 
-
-            with st.spinner("🧠 AI is thinking and generating SQL..."):
+            with st.spinner("🧠 AI generating SQL..."):
                 sql_query = generate_sql_with_gpt(user_question)
-                if sql_query:        
+                if sql_query:
                     st.session_state.generated_sql = sql_query
                     st.session_state.current_question = user_question
 
         if st.session_state.generated_sql:
-            st.subheader("Generated SQL Query")
-            st.info(f"**Question:** {st.session_state.current_question}")
+            with st.container():
+                st.markdown("### 📝 Generated SQL")
+                st.markdown("<hr style='margin-top:-10px;'>", unsafe_allow_html=True)
 
-            edited_sql = st.text_area(
-                "Review and edit the SQL query if needed:", 
-                value=st.session_state.generated_sql,
-                height=200,
-            )
+                st.info(f"**Question:** {st.session_state.current_question}")
 
-            col1, col2 = st.columns([1, 5])
+                edited_sql = st.text_area(
+                    "Edit if needed:",
+                    value=st.session_state.generated_sql,
+                    height=170
+                )
 
-            with col1:
-                run_button = st.button("Run Query", type="primary", width="stretch")
-            
-            if run_button:
-                with st.spinner("Executing query ..."):
-                    df = run_query(edited_sql)
-                    
-                    if df is not None:
-                        st.session_state.query_history.append(
-                            {'question': user_question, 
-                            'sql': edited_sql, 
-                            'rows': len(df)}
-                        )
+                run_button = st.button("▶ Run Query", use_container_width=True)
 
-                        st.markdown("---")
-                        st.subheader("📊 Query Results")
-                        st.success(f"✅ Query returned {len(df)} rows")
-                        st.dataframe(df, width="stretch")
+                if run_button:
+                    with st.spinner("Running query..."):
+                        df = run_query(edited_sql)
+                        if df is not None:
+                            st.session_state.query_history.append(
+                                {
+                                    "question": st.session_state.current_question,
+                                    "sql": edited_sql,
+                                    "rows": len(df)
+                                }
+                            )
+                            st.success(f"✔ Returned {len(df)} rows")
+                            st.dataframe(df, use_container_width=True)
 
-    with right_col:
-        st.subheader("📜 Query History")
-        for idx, item in enumerate(reversed(st.session_state.query_history[-5:])):
-            with st.expander(f"Query {len(st.session_state.query_history)-idx}: {item['question'][:60]}..."):
-                st.markdown(f"**Question:** {item["question"]}")
-                st.code(item["sql"], language="sql")
-                st.caption(f"Returned {item["rows"]} rows")
-                if st.button(f"Re-run this query", key=f"rerun_{idx}"):
-                    df = run_query(item["sql"])
-                    if df is not None:
-                        st.dataframe(df, width="stretch")
+
+    with right:
+        st.markdown("### 📜 Query History")
+        st.markdown("<hr style='margin-top:-10px;'>", unsafe_allow_html=True)
+
+        # Scrollable history box
+        history_container = st.container()
+        with history_container:
+            if not st.session_state.query_history:
+                st.info("No queries yet.")
+            else:
+                for idx, item in enumerate(reversed(st.session_state.query_history[-10:])):
+                    with st.expander(f"Query {idx+1}: {item['question'][:45]}..."):
+                        st.code(item["sql"], language="sql")
+                        st.caption(f"{item['rows']} rows returned")
+                        if st.button("Re-run", key=f"rerun_{idx}", use_container_width=True):
+                            df = run_query(item["sql"])
+                            if df is not None:
+                                st.dataframe(df, use_container_width=True)
 
 
 if __name__ == "__main__":
