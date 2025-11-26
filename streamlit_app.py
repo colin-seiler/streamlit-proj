@@ -314,17 +314,33 @@ def main():
                 st.info("No queries yet.")
             else:
                 for idx, item in enumerate(reversed(st.session_state.query_history[-10:])):
+
                     with st.expander(f"Query {idx+1}: {item['question'][:45]}..."):
+                        
                         st.markdown(f"**Question:** {item['question']}")
+
+                        # Invisible textarea needed for JS access
                         st.text_area(
                             f"hidden_sql_{idx}",
                             item["sql"],
                             key=f"hidden_sql_{idx}",
-                            height=0,
+                            height=1,
                             label_visibility="collapsed"
                         )
 
-                        html_id = f"sql_copy_{idx}"
+                        # Make the textarea truly invisible
+                        st.markdown(
+                            f"""
+                            <style>
+                                #hidden_sql_{idx} {{
+                                    display: none !important;
+                                }}
+                            </style>
+                            """,
+                            unsafe_allow_html=True,
+                        )
+
+                        # Copy button
                         components.html(
                             f"""
                             <textarea id="sql_copy_{idx}" style="display:none;">{item['sql']}</textarea>
@@ -343,8 +359,8 @@ def main():
                             """,
                             height=40
                         )
-                        
-                        if st.button("Re-run query", key=f"rerun_{idx}", use_container_width=True):
+
+                        if st.button("Re-run", key=f"rerun_{idx}", use_container_width=True):
                             df = run_query(item["sql"])
                             if df is not None:
                                 st.dataframe(df, use_container_width=True)
