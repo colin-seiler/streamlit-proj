@@ -177,3 +177,4 @@ pyrightconfig.json
 
 .env
 .streamlit
+data.csv

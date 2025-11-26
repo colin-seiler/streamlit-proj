@@ -4,7 +4,6 @@ import pandas as pd
 import psycopg2
 from dotenv import load_dotenv
 from openai import OpenAI
-import os
 import bcrypt
 
 
@@ -19,53 +18,52 @@ DATABASE_SCHEMA = """
 Database Schema:
 
 LOOKUP TABLES:
-- genders (gender_id SERIAL PRIMARY KEY, gender_desc TEXT)
-- races (race_id SERIAL PRIMARY KEY, race_desc TEXT)
-- marital_statuses (marital_status_id SERIAL PRIMARY KEY, marital_status_desc TEXT)
-- languages (language_id SERIAL PRIMARY KEY, language_desc TEXT)
-- lab_units (unit_id SERIAL PRIMARY KEY, unit_string TEXT)
-- lab_tests (lab_test_id SERIAL PRIMARY KEY, lab_name TEXT, unit_id INTEGER)
-- diagnosis_codes (diagnosis_code TEXT PRIMARY KEY, diagnosis_description TEXT)
+- regions (
+    region_id SERIAL PRIMARY KEY,
+    region_name TEXT
+  )
+
+- countries (
+    country_id SERIAL PRIMARY KEY,
+    country_name TEXT,
+    region_id INTEGER (FK to regions)
+  )
+
+- product_categories (
+    product_category_id SERIAL PRIMARY KEY,
+    product_category_name TEXT,
+    product_category_description TEXT
+  )
 
 CORE TABLES:
-- patients (
-    patient_id TEXT PRIMARY KEY,
-    patient_gender INTEGER (FK to genders),
-    patient_dob TIMESTAMP,
-    patient_race INTEGER (FK to races),
-    patient_marital_status INTEGER (FK to marital_statuses),
-    patient_language INTEGER (FK to languages),
-    patient_population_pct_below_poverty REAL
+- customers (
+    customer_id SERIAL PRIMARY KEY,
+    first_name TEXT,
+    last_name TEXT,
+    address TEXT,
+    city TEXT,
+    country_id INTEGER (FK to countries)
   )
 
-- admissions (
-    patient_id TEXT,
-    admission_id INTEGER,
-    admission_start TIMESTAMP,
-    admission_end TIMESTAMP,
-    PRIMARY KEY (patient_id, admission_id)
+- products (
+    product_id SERIAL PRIMARY KEY,
+    product_name TEXT,
+    product_unit_price REAL,
+    product_category_id INTEGER (FK to product_categories)
   )
 
-- admission_primary_diagnoses (
-    patient_id TEXT,
-    admission_id INTEGER,
-    diagnosis_code TEXT (FK to diagnosis_codes),
-    PRIMARY KEY (patient_id, admission_id)
-  )
-
-- admission_lab_results (
-    patient_id TEXT,
-    admission_id INTEGER,
-    lab_test_id INTEGER (FK to lab_tests),
-    lab_value REAL,
-    lab_datetime TIMESTAMP
+- order_details (
+    order_id SERIAL PRIMARY KEY,
+    customer_id INTEGER (FK to customers),
+    product_id INTEGER (FK to products),
+    order_date TIMESTAMP,
+    quantity_ordered INTEGER
   )
 
 IMPORTANT NOTES:
 - Use JOINs to get descriptive values from lookup tables
-- patient_dob, admission_start, admission_end, and lab_datetime are TIMESTAMP types
-- To calculate age: EXTRACT(YEAR FROM AGE(patient_dob))
-- To calculate length of stay: EXTRACT(EPOCH FROM (admission_end - admission_start)) / 86400 (gives days)
+- order_date is a TIMESTAMP type
+- To calculate total order value: quantity_ordered * product_unit_price
 - Always use proper JOINs for foreign key relationships
 """
 
