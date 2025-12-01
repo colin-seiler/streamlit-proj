@@ -5,8 +5,6 @@ from psycopg2 import sql, Error
 from tqdm import tqdm
 from psycopg2.extras import execute_values
 
-
-
 from utils import get_db_url
 
 
@@ -361,5 +359,5 @@ if __name__ == "__main__":
     print("✅ Product table created\n")
     step11_create_orderdetail_table('data.csv', DATABASE_URL)
     print("✅ Order table created\n")
-
+    
     print("✅ Database creation complete!")
